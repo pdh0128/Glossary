@@ -24,56 +24,50 @@ def render_translate():
 
     input_text = st.text_input("STT data입니다.", "")
 
-    if "clicked_mongo_id" not in st.session_state:
-        st.session_state.clicked_mongo_id = None
+    if "selected_mongo_id" not in st.session_state:
+        st.session_state.selected_mongo_id = None
 
     if "glossary_items" not in st.session_state:
         st.session_state.glossary_items = []
 
-    if st.button("검색"):
+    if st.button("입력"):
         if input_text.strip() == "":
-            st.warning("검색어를 입력해주세요.")
+            st.warning("문장을 입력해주세요.")
         else:
             params = {"text": input_text, "size": 10}
             response = requests.get(f"{API_BASE}/glossary", params=params)
 
             if response.status_code == 200:
                 st.session_state.glossary_items = response.json()
-                st.session_state.clicked_mongo_id = None
+                st.session_state.selected_mongo_id = None
             else:
-                st.error("검색 요청에 실패했습니다.")
+                st.error("용어집 검색 요청에 실패했습니다.")
 
     if st.session_state.glossary_items:
-        st.subheader("검색 결과:")
-        for item in st.session_state.glossary_items:
-            meta = item["metadata"]
-            title = meta.get("title", "제목 없음")
-            description = meta.get("description", "")
-            mongo_id = meta.get("mongo_id")
+        st.subheader("추천 용어집 (하나 선택):")
 
-            with st.container():
-                st.markdown(f"**{title}**")
-                st.caption(description)
+        glossary_options = {
+            f"{item['metadata'].get('title', '제목 없음')} - {item['metadata'].get('description', '')}": item['metadata']['mongo_id']
+            for item in st.session_state.glossary_items
+        }
 
-                if st.button(f"번역 요청: {title}", key=mongo_id):
-                    st.session_state.clicked_mongo_id = mongo_id
+        selected_option = st.radio("용어집 선택", list(glossary_options.keys()))
+        st.session_state.selected_mongo_id = glossary_options[selected_option]
 
-    if st.session_state.clicked_mongo_id:
-        selected_item = next(
-            (item for item in st.session_state.glossary_items if item["metadata"]["mongo_id"] == st.session_state.clicked_mongo_id),
-            None
-        )
-        if selected_item:
-            translate_payload = {
-                "text": input_text,
-                "mongo_id": st.session_state.clicked_mongo_id,
-                "source_lang": source_lang,
-                "target_lang": target_lang
-            }
-            translate_response = requests.post(f"{API_BASE}/glossary/translate", json=translate_payload)
+        if st.button("번역"):
+            if st.session_state.selected_mongo_id:
+                translate_payload = {
+                    "text": input_text,
+                    "mongo_id": st.session_state.selected_mongo_id,
+                    "source_lang": source_lang,
+                    "target_lang": target_lang
+                }
+                translate_response = requests.post(f"{API_BASE}/glossary/translate", json=translate_payload)
 
-            if translate_response.status_code == 200:
-                st.success("번역 결과:")
-                st.write(translate_response.text)
+                if translate_response.status_code == 200:
+                    st.success("번역 결과:")
+                    st.write(translate_response.text)
+                else:
+                    st.error("번역 요청에 실패했습니다.")
             else:
-                st.error("번역 요청에 실패했습니다.")
+                st.warning("용어집을 선택해주세요.")

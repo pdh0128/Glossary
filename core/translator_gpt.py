@@ -26,7 +26,7 @@ template = """
 class ChatGPT(Translator):
     def __init__(self):
         llm = ChatOpenAI(
-            temperature=0.7,
+            temperature=0,
             model="gpt-3.5-turbo"
         )
 
