@@ -15,6 +15,13 @@ def recommend(stt_data : str, k : int):
 async def translate(stt_request : SttRequest):
     mongo_id = stt_request.mongo_id
     document = await mongo_dao.get_by_id(mongo_id)
+    if document is None:
+        print("none")
+        return None
+    elif "word" not in document:
+        print("no word")
+        return None
+
     matched_word = await fuzzy_match_words(sentence=stt_request.text, word_list=document["word"], lang_field=stt_request.source_lang, threshold=50)
     chatgpt = ChatGPT()
     translated_text = await chatgpt.translate(sentence=stt_request.text, words=matched_word, resource_lang=stt_request.source_lang, target_lang=stt_request.target_lang)
