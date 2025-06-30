@@ -14,11 +14,13 @@ async def bag_of_word(word_zip: GlossaryRequest):
     await glossary_service.upload_glossary(word_zip)
     return {"message" : "upload glossary"}
 
+# 용어집 추천
 @app.get("/glossary")
 def glossary_recommend(text: str = Query(...), k : int = Query(10)):
     glossary_list =  glossary_service.recommend(text, k)
     return glossary_list
 
+# 번역
 @app.post("/glossary/translate")
 async def glossary_translate(stt_request: SttRequest):
     translated_text = await glossary_service.translate(stt_request)
