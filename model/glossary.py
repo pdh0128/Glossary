@@ -27,3 +27,17 @@ class Glossary(GlossaryRequest):
         }
 
         return result
+
+
+class SttRequest(BaseModel):
+    text : str
+    mongo_id : str
+    source_lang : str
+    target_lang : str
+
+    def to_dict(self):
+        result = {
+            "text": self.text,
+            "mongo_id": self.mongo_id,
+        }
+        return result

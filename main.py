@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.params import Query
 
-from model.glossary import GlossaryRequest
+from model.glossary import GlossaryRequest, SttRequest
 from service import glossary_service
 from core.mongo_watcher import start_change_stream_in_thread
 
@@ -15,9 +15,14 @@ async def bag_of_word(word_zip: GlossaryRequest):
     return {"message" : "upload glossary"}
 
 @app.get("/glossary")
-def glossary(text: str = Query(...), k : int = Query(10)):
+def glossary_recommend(text: str = Query(...), k : int = Query(10)):
     glossary_list =  glossary_service.recommend(text, k)
     return glossary_list
+
+@app.post("/glossary/translate")
+async def glossary_translate(stt_request: SttRequest):
+    translated_text = await glossary_service.translate(stt_request)
+    return translated_text
 
 if __name__ == "__main__":
     import uvicorn

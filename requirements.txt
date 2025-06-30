@@ -4,3 +4,7 @@ openai==1.93.0
 pinecone==7.3.0
 pymongo==4.13.2
 python-dotenv==1.1.1
+rapidfuzz==3.13.0
+langchain==0.3.26
+langchain-openai==0.3.27
+langcodes==3.5.0
